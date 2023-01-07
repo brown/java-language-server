@@ -120,7 +120,7 @@ public class StringSearchTest {
     @Test
     public void findAutocompleteBetweenLines() {
         var rel = Paths.get("src", "org", "javacs", "example", "AutocompleteBetweenLines.java");
-        var file = LanguageServerFixture.DEFAULT_WORKSPACE_ROOT.resolve(rel);
+        var file = LanguageServerFixture.getDefaultWorkspaceRoot().resolve(rel);
         assertTrue(StringSearch.containsWordMatching(file, "ABetweenLines"));
     }
 

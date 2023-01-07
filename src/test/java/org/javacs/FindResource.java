@@ -13,6 +13,7 @@ public class FindResource {
 
     public static Path path(String resourcePath) {
         if (resourcePath.startsWith("/")) resourcePath = resourcePath.substring(1);
-        return Paths.get("./src/test/examples/maven-project/src").resolve(resourcePath).toAbsolutePath().normalize();
+        Path maven = LanguageServerFixture.getDefaultWorkspaceRoot();
+        return maven.resolve("src").resolve(resourcePath).toAbsolutePath().normalize();
     }
 }

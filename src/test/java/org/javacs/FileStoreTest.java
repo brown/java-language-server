@@ -11,7 +11,7 @@ public class FileStoreTest {
 
     @Before
     public void setWorkspaceRoot() {
-        FileStore.setWorkspaceRoots(Set.of(LanguageServerFixture.DEFAULT_WORKSPACE_ROOT));
+        FileStore.setWorkspaceRoots(Set.of(LanguageServerFixture.getDefaultWorkspaceRoot()));
     }
 
     @Test

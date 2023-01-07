@@ -32,7 +32,7 @@ public class SemanticColorsTest {
 
     private final JavaLanguageServer server =
             LanguageServerFixture.getJavaLanguageServer(
-                    LanguageServerFixture.DEFAULT_WORKSPACE_ROOT,
+                    LanguageServerFixture.getDefaultWorkspaceRoot(),
                     new LanguageClient() {
                         @Override
                         public void publishDiagnostics(PublishDiagnosticsParams params) {}

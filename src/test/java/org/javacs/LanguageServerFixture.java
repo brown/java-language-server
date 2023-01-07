@@ -1,6 +1,8 @@
 package org.javacs;
 
+import com.google.devtools.build.runfiles.Runfiles;
 import com.google.gson.JsonElement;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
@@ -8,12 +10,17 @@ import java.util.logging.Logger;
 import org.javacs.lsp.*;
 
 public class LanguageServerFixture {
-
-    public static Path DEFAULT_WORKSPACE_ROOT = Paths.get("src/test/examples/maven-project").normalize();
-    public static Path SIMPLE_WORKSPACE_ROOT = Paths.get("src/test/examples/simple-project").normalize();
-
     static {
         Main.setRootFormat();
+    }
+
+    public static Path getDefaultWorkspaceRoot() {
+        try {
+            return Paths.get(Runfiles.create().rlocation(
+                                 "jls/src/test/examples/maven-project"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static CompilerProvider getCompilerProvider() {
@@ -21,11 +28,11 @@ public class LanguageServerFixture {
     }
 
     static JavaLanguageServer getJavaLanguageServer() {
-        return getJavaLanguageServer(DEFAULT_WORKSPACE_ROOT, diagnostic -> LOG.info(diagnostic.message));
+        return getJavaLanguageServer(getDefaultWorkspaceRoot(), diagnostic -> LOG.info(diagnostic.message));
     }
 
     static JavaLanguageServer getJavaLanguageServer(Consumer<Diagnostic> onError) {
-        return getJavaLanguageServer(DEFAULT_WORKSPACE_ROOT, onError);
+        return getJavaLanguageServer(getDefaultWorkspaceRoot(), onError);
     }
 
     static JavaLanguageServer getJavaLanguageServer(Path workspaceRoot, Consumer<Diagnostic> onError) {

@@ -1,5 +1,6 @@
 package org.javacs;
 
+import com.google.devtools.build.runfiles.Runfiles;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
@@ -12,9 +13,18 @@ import org.junit.Test;
 
 public class JavaLanguageServerTest {
 
+    private static String filePath(String relativePath) {
+        try {
+            return Runfiles.create().rlocation("jls/" + relativePath);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     @Test
     public void LintShouldNotCrashOnCodeWithMissingTypeIdentifier() {
-        String filePath = "src/test/examples/missing-type-identifier/Sample.java";
+        String filePath = filePath("src/test/examples/missing-type-identifier/Sample.java");
         TextDocumentItem textDocument = new TextDocumentItem();
         textDocument.uri = URI.create("file:///" + filePath);
         try {

@@ -1,5 +1,6 @@
 package org.javacs;
 
+import com.google.devtools.build.runfiles.Runfiles;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -8,14 +9,22 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Logger;
 import org.javacs.debug.*;
 import org.javacs.debug.proto.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class JavaDebugServerTest {
-    Path workingDirectory = Paths.get("src/test/examples/debug");
     DebugClient client = new MockClient();
     JavaDebugServer server = new JavaDebugServer(client);
     Process process;
     ArrayBlockingQueue<StoppedEventBody> stoppedEvents = new ArrayBlockingQueue<>(10);
+
+    private static Path getWorkingDirectory() {
+        try {
+            return Paths.get(Runfiles.create().rlocation("jls/src/test/examples/debug"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     class MockClient implements DebugClient {
         @Override
@@ -61,7 +70,7 @@ public class JavaDebugServerTest {
         var command =
                 List.of("java", "-Xdebug", "-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y", mainClass);
         LOG.info("Launch " + String.join(", ", command));
-        process = new ProcessBuilder().command(command).directory(workingDirectory.toFile()).inheritIO().start();
+        process = new ProcessBuilder().command(command).directory(getWorkingDirectory().toFile()).inheritIO().start();
         java.lang.Thread.sleep(1000);
     }
 
@@ -76,7 +85,7 @@ public class JavaDebugServerTest {
         var set = new SetBreakpointsArguments();
         var point = new SourceBreakpoint();
         point.line = line;
-        set.source.path = workingDirectory.resolve(className + ".java").toString();
+        set.source.path = getWorkingDirectory().resolve(className + ".java").toString();
         set.breakpoints = new SourceBreakpoint[] {point};
         server.setBreakpoints(set);
     }

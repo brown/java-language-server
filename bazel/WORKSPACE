@@ -1,0 +1,77 @@
+workspace(name = "jls-bazel")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+# Create a Bazel external repository called "jls" containing the
+# java-language-server source code overlayed with the contents of the "overlay"
+# subdirectory.  This allows us to locate the Bazel files needed to compile
+# java-language-server in this "bazel" directory tree, instead of adding them
+# to the "src" tree.
+
+new_local_repository(
+    name = "jls-root",
+    build_file_content = "",
+    path = "../",
+)
+
+load("@jls-root//bazel:configure.bzl", "configure")
+
+configure(name = "jls")
+
+# Maven artifacts.
+
+RULES_JVM_EXTERNAL_TAG = "4.5"
+
+RULES_JVM_EXTERNAL_SHA = "b17d7388feb9bfa7f2fa09031b32707df529f26c91ab9e5d909eb1676badd9a6"
+
+http_archive(
+    name = "rules_jvm_external",
+    sha256 = RULES_JVM_EXTERNAL_SHA,
+    strip_prefix = "rules_jvm_external-%s" % RULES_JVM_EXTERNAL_TAG,
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/%s.zip" %
+          RULES_JVM_EXTERNAL_TAG,
+)
+
+load("@rules_jvm_external//:repositories.bzl", "rules_jvm_external_deps")
+
+rules_jvm_external_deps()
+
+load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
+
+rules_jvm_external_setup()
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+# Mavel artifact versions here should match those in pom.xml.
+maven_install(
+    artifacts = [
+        "com.google.code.gson:gson:2.8.9",
+        "junit:junit:4.13.1",
+        "org.hamcrest:hamcrest-all:1.3",
+        "org.openjdk.jmh:jmh-core:1.21",
+        "org.openjdk.jmh:jmh-generator-annprocess:1.21",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)
+
+# Protocol buffers.
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_proto",
+    sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
+    strip_prefix = "rules_proto-5.3.0-21.7",
+    urls = [
+        "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
+    ],
+)
+
+load("@rules_proto//proto:repositories.bzl", "rules_proto_dependencies", "rules_proto_toolchains")
+
+rules_proto_dependencies()
+
+rules_proto_toolchains()

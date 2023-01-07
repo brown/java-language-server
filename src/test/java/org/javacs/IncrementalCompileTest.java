@@ -3,6 +3,7 @@ package org.javacs;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.devtools.build.runfiles.Runfiles;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.util.*;
 import java.io.IOException;
@@ -21,9 +22,23 @@ import org.junit.Test;
 
 public class IncrementalCompileTest implements TaskListener, DiagnosticListener<JavaFileObject> {
     final JavaCompiler compiler = ServiceLoader.load(JavaCompiler.class).iterator().next();
-    final Path src = Paths.get("src/test/examples/incremental-compile/src").toAbsolutePath();
-    final Path foo = src.resolve("foo/bar/Foo.java");
-    final List<String> options = List.of("-sourcepath", src.toString(), "-verbose", "-proc:none");
+    final Path foo;
+    final List<String> options;
+
+    public IncrementalCompileTest() {
+        final Path src;
+        try {
+            src = Paths.get(
+                Runfiles.create().rlocation(
+                    "jls/src/test/examples/incremental-compile/src"))
+                .toAbsolutePath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        foo = src.resolve("foo/bar/Foo.java");
+        options = List.of("-sourcepath", src.toString(), "-verbose", "-proc:none");
+    }
 
     @Before
     public void setLogFormat() {
