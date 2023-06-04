@@ -40,7 +40,7 @@ public class ErrorProvider {
         var result = new ArrayList<org.javacs.lsp.Diagnostic>();
         for (var d : task.diagnostics) {
             if (d.getSource() == null || !d.getSource().toUri().equals(root.getSourceFile().toUri())) continue;
-            if (d.getStartPosition() == -1 || d.getEndPosition() == -1) continue;
+            if (d.getStartPosition() == Diagnostic.NOPOS || d.getEndPosition() == Diagnostic.NOPOS) continue;
             result.add(lspDiagnostic(d, root.getLineMap()));
         }
         return result;
@@ -126,19 +126,24 @@ public class ErrorProvider {
             throw new RuntimeException(unusedEl + " has no path");
         }
         var root = path.getCompilationUnit();
+        var file = Paths.get(root.getSourceFile().toUri());
+        var contents = FileStore.contents(file);
         var leaf = path.getLeaf();
         var pos = trees.getSourcePositions();
         var start = (int) pos.getStartPosition(root, leaf);
         var end = (int) pos.getEndPosition(root, leaf);
+        if (end == Diagnostic.NOPOS) {
+            end = contents.length();
+        }
+
         if (leaf instanceof VariableTree) {
             var v = (VariableTree) leaf;
             var offset = (int) pos.getEndPosition(root, v.getType());
-            if (offset != -1) {
+            if (offset != Diagnostic.NOPOS) {
                 start = offset;
             }
         }
-        var file = Paths.get(root.getSourceFile().toUri());
-        var contents = FileStore.contents(file);
+
         var name = unusedEl.getSimpleName();
         if (name.contentEquals("<init>")) {
             name = unusedEl.getEnclosingElement().getSimpleName();
