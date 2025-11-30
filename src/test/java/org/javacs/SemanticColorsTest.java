@@ -1,19 +1,21 @@
 package org.javacs;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 import com.google.gson.JsonElement;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+
 import org.javacs.lsp.LanguageClient;
 import org.javacs.lsp.PublishDiagnosticsParams;
 import org.javacs.lsp.Range;
 import org.javacs.lsp.ShowMessageParams;
 import org.javacs.markup.SemanticColors;
 import org.junit.Test;
+
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class SemanticColorsTest {
 
@@ -22,8 +24,14 @@ public class SemanticColorsTest {
         var found = colors("org/javacs/color/ColorExample.java");
         assertThat("colors field declaration", found, hasItem("virtualField:4:field"));
         assertThat("colors field reference", found, hasItem("virtualField:7:field"));
-        assertThat("ignores method parameter declaration", found, not(hasItem("methodParameter:10:field")));
-        assertThat("ignores method parameter reference", found, not(hasItem("methodParameter:11:field")));
+        assertThat(
+                "ignores method parameter declaration",
+                found,
+                not(hasItem("methodParameter:10:field")));
+        assertThat(
+                "ignores method parameter reference",
+                found,
+                not(hasItem("methodParameter:11:field")));
         assertThat("colors static field declaration", found, hasItem("staticField:14:field"));
         assertThat("colors static field reference", found, hasItem("staticField:17:field"));
     }
@@ -32,7 +40,7 @@ public class SemanticColorsTest {
 
     private final JavaLanguageServer server =
             LanguageServerFixture.getJavaLanguageServer(
-                    LanguageServerFixture.DEFAULT_WORKSPACE_ROOT,
+                    LanguageServerFixture.getDefaultWorkspaceRoot(),
                     new LanguageClient() {
                         @Override
                         public void publishDiagnostics(PublishDiagnosticsParams params) {}
@@ -58,10 +66,13 @@ public class SemanticColorsTest {
         var contents = FileStore.contents(path);
         var list = new ArrayList<String>();
         for (var range : colors.statics) {
-            list.add(String.format("%s:%d:static", substring(contents, range), range.start.line + 1));
+            list.add(
+                    String.format(
+                            "%s:%d:static", substring(contents, range), range.start.line + 1));
         }
         for (var range : colors.fields) {
-            list.add(String.format("%s:%d:field", substring(contents, range), range.start.line + 1));
+            list.add(
+                    String.format("%s:%d:field", substring(contents, range), range.start.line + 1));
         }
         return list;
     }

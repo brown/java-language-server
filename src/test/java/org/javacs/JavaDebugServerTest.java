@@ -1,21 +1,36 @@
 package org.javacs;
 
+import com.google.devtools.build.runfiles.AutoBazelRepository;
+import com.google.devtools.build.runfiles.Runfiles;
+
+import org.javacs.debug.*;
+import org.javacs.debug.proto.*;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Logger;
-import org.javacs.debug.*;
-import org.javacs.debug.proto.*;
-import org.junit.Test;
 
+@AutoBazelRepository
 public class JavaDebugServerTest {
-    Path workingDirectory = Paths.get("src/test/examples/debug");
     DebugClient client = new MockClient();
     JavaDebugServer server = new JavaDebugServer(client);
     Process process;
     ArrayBlockingQueue<StoppedEventBody> stoppedEvents = new ArrayBlockingQueue<>(10);
+
+    private static Path getWorkingDirectory() {
+        try {
+            Runfiles.Preloaded runfiles = Runfiles.preload();
+            return Paths.get(
+                    runfiles.withSourceRepository(AutoBazelRepository_JavaDebugServerTest.NAME)
+                            .rlocation("jls/src/test/examples/debug"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     class MockClient implements DebugClient {
         @Override
@@ -42,12 +57,15 @@ public class JavaDebugServerTest {
             if (evt.breakpoint.verified) {
                 LOG.info(
                         String.format(
-                                "Breakpoint at %s:%d is verified", evt.breakpoint.source.path, evt.breakpoint.line));
+                                "Breakpoint at %s:%d is verified",
+                                evt.breakpoint.source.path, evt.breakpoint.line));
             } else {
                 LOG.info(
                         String.format(
                                 "Breakpoint at %s:%d cannot be verified because %s",
-                                evt.breakpoint.source.path, evt.breakpoint.line, evt.breakpoint.message));
+                                evt.breakpoint.source.path,
+                                evt.breakpoint.line,
+                                evt.breakpoint.message));
             }
         }
 
@@ -59,9 +77,18 @@ public class JavaDebugServerTest {
 
     public void launchProcess(String mainClass) throws IOException, InterruptedException {
         var command =
-                List.of("java", "-Xdebug", "-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y", mainClass);
+                List.of(
+                        "java",
+                        "-Xdebug",
+                        "-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y",
+                        mainClass);
         LOG.info("Launch " + String.join(", ", command));
-        process = new ProcessBuilder().command(command).directory(workingDirectory.toFile()).inheritIO().start();
+        process =
+                new ProcessBuilder()
+                        .command(command)
+                        .directory(getWorkingDirectory().toFile())
+                        .inheritIO()
+                        .start();
         java.lang.Thread.sleep(1000);
     }
 
@@ -76,7 +103,7 @@ public class JavaDebugServerTest {
         var set = new SetBreakpointsArguments();
         var point = new SourceBreakpoint();
         point.line = line;
-        set.source.path = workingDirectory.resolve(className + ".java").toString();
+        set.source.path = getWorkingDirectory().resolve(className + ".java").toString();
         set.breakpoints = new SourceBreakpoint[] {point};
         server.setBreakpoints(set);
     }
@@ -109,7 +136,9 @@ public class JavaDebugServerTest {
                 var stack = server.stackTrace(requestTrace);
                 System.out.println("Thread main:");
                 for (var frame : stack.stackFrames) {
-                    System.out.println(String.format("\t%s:%d (%s)", frame.name, frame.line, frame.source.path));
+                    System.out.println(
+                            String.format(
+                                    "\t%s:%d (%s)", frame.name, frame.line, frame.source.path));
                 }
                 // Get variables
                 var requestScopes = new ScopesArguments();
@@ -199,7 +228,9 @@ public class JavaDebugServerTest {
                 var stack = server.stackTrace(requestTrace);
                 System.out.println("Thread main:");
                 for (var frame : stack.stackFrames) {
-                    System.out.println(String.format("\t%s:%d (%s)", frame.name, frame.line, frame.source.path));
+                    System.out.println(
+                            String.format(
+                                    "\t%s:%d (%s)", frame.name, frame.line, frame.source.path));
                 }
                 // Get variables
                 var requestScopes = new ScopesArguments();

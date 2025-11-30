@@ -19,7 +19,7 @@ package analysis;
 option java_package = "com.google.devtools.build.lib.analysis";
 option java_outer_classname = "AnalysisProtos";
 
-import "build.proto";
+import "src/main/protobuf/build.proto";
 
 // Container for the action graph properties.
 message ActionGraphContainer {

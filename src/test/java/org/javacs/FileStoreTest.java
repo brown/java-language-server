@@ -1,17 +1,18 @@
 package org.javacs;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Set;
 
 public class FileStoreTest {
 
     @Before
     public void setWorkspaceRoot() {
-        FileStore.setWorkspaceRoots(Set.of(LanguageServerFixture.DEFAULT_WORKSPACE_ROOT));
+        FileStore.setWorkspaceRoots(Set.of(LanguageServerFixture.getDefaultWorkspaceRoot()));
     }
 
     @Test

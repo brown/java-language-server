@@ -1,16 +1,17 @@
 package org.javacs;
 
-import static org.hamcrest.Matchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import java.nio.file.Paths;
 import org.javacs.lsp.DidChangeTextDocumentParams;
 import org.javacs.lsp.DidCloseTextDocumentParams;
 import org.javacs.lsp.DidOpenTextDocumentParams;
 import org.javacs.lsp.TextDocumentContentChangeEvent;
 import org.junit.Test;
+
+import java.nio.file.Paths;
 
 public class StringSearchTest {
     private void testNext(String pat, String text, int index) {
@@ -74,7 +75,8 @@ public class StringSearchTest {
         assertTrue(StringSearch.matchesTitleCase("Prefix FooBar", "fb"));
         assertTrue(StringSearch.matchesTitleCase("Prefix FooBar", "fob"));
         assertTrue(StringSearch.matchesTitleCase("Prefix AnyPrefixFooBar", "fb"));
-        assertTrue(StringSearch.matchesTitleCase("Prefix AutocompleteBetweenLines", "ABetweenLines"));
+        assertTrue(
+                StringSearch.matchesTitleCase("Prefix AutocompleteBetweenLines", "ABetweenLines"));
         assertTrue(StringSearch.matchesTitleCase("Prefix UPPERFooBar", "fb"));
         assertFalse(StringSearch.matchesTitleCase("Foo Bar", "fb"));
     }
@@ -122,7 +124,7 @@ public class StringSearchTest {
     @Test
     public void findAutocompleteBetweenLines() {
         var rel = Paths.get("src", "org", "javacs", "example", "AutocompleteBetweenLines.java");
-        var file = LanguageServerFixture.DEFAULT_WORKSPACE_ROOT.resolve(rel);
+        var file = LanguageServerFixture.getDefaultWorkspaceRoot().resolve(rel);
         assertTrue(StringSearch.containsWordMatching(file, "ABetweenLines"));
     }
 

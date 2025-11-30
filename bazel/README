@@ -1,0 +1,8 @@
+
+Build the server with:
+
+bazel build :java-language-server
+
+Run all the tests with:
+
+bazel test @jls//src/test/java/org/javacs:all

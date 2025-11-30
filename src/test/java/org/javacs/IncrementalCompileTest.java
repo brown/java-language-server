@@ -1,10 +1,16 @@
 package org.javacs;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
+import com.google.devtools.build.runfiles.AutoBazelRepository;
+import com.google.devtools.build.runfiles.Runfiles;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.util.*;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -12,18 +18,36 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.logging.Logger;
+
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
-import org.junit.Before;
-import org.junit.Test;
 
+@AutoBazelRepository
 public class IncrementalCompileTest implements TaskListener, DiagnosticListener<JavaFileObject> {
     final JavaCompiler compiler = ServiceLoader.load(JavaCompiler.class).iterator().next();
-    final Path src = Paths.get("src/test/examples/incremental-compile/src").toAbsolutePath();
-    final Path foo = src.resolve("foo/bar/Foo.java");
-    final List<String> options = List.of("-sourcepath", src.toString(), "-verbose", "-proc:none");
+    final Path foo;
+    final List<String> options;
+
+    public IncrementalCompileTest() {
+        final Path src;
+        try {
+            Runfiles.Preloaded runfiles = Runfiles.preload();
+            src =
+                    Paths.get(
+                                    runfiles.withSourceRepository(
+                                                    AutoBazelRepository_IncrementalCompileTest.NAME)
+                                            .rlocation(
+                                                    "jls/src/test/examples/incremental-compile/src"))
+                            .toAbsolutePath();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        foo = src.resolve("foo/bar/Foo.java");
+        options = List.of("-sourcepath", src.toString(), "-verbose", "-proc:none");
+    }
 
     @Before
     public void setLogFormat() {

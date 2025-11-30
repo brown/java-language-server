@@ -1,0 +1,9 @@
+
+# The Java language versions here should match those in pom.xml.
+
+build \
+    --java_language_version=21 \
+    --java_runtime_version=remotejdk_21
+
+test \
+     --deleted_packages=@jls//src/test/examples/bazel-project/hello
